@@ -12,7 +12,7 @@ PARTICIPANTS = 2
 TOTAL_GLOBAL_SAMPLES = 750
 DBSCAN_EPS = 0.3
 DBSCAN_MIN_SAMPLES = 10
-CENTERS = [[1, 1], [-1, -1], [-1, 1]]
+CENTERS = [[1, 1], [-1, -1]]
 
 
 def evaluation(labels_true, labels_predicted):
