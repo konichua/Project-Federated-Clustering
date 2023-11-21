@@ -8,13 +8,13 @@ def generate_participants_data(global_dataset, participants_nb, labels, type, ra
     if participants_nb < 2:
         raise ValueError('incorrect number of participants')
     # uniformly distributed samples
-    if type == 'uniform':
+    if type == 'iid':
         samples_by_part = samples_nb // participants_nb
         divided_dataset = [global_dataset[(i - 1) * samples_by_part: i * samples_by_part]
                            for i in range(1, participants_nb)]
         divided_dataset.append(global_dataset[(participants_nb - 1) * samples_by_part:])
     # less uniformly distributed samples
-    elif type == 'non_uniform':
+    elif type == 'non-iid points':
         random.seed(random_seed)
         start = 0
         divided_dataset = list(np.zeros(participants_nb))
@@ -26,7 +26,7 @@ def generate_participants_data(global_dataset, participants_nb, labels, type, ra
     # samples assigned to participant by label
     # noise data goes to the first participant
     # participants_nb is useless in this option
-    elif type == 'max_variance':
+    elif type == 'non-iid clusters':
         clusters = set(labels)
         divided_dataset = [global_dataset[labels == c] for c in clusters if c != -1]
         divided_dataset[0] = np.concatenate([divided_dataset[0], global_dataset[labels == -1]])
