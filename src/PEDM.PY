@@ -39,7 +39,7 @@ D1, D2 = generate_participants_data(global_data, PARTICIPANTS, db.labels_, 'non_
 plt.scatter(D1[:,0], D1[:,1])
 plt.scatter(D2[:,0], D2[:,1])
 # plt.scatter(D3[:,0], D3[:,1])
-plt.title('black data is from D1, green from D2')
+plt.title('blue data is from D1, orange from D2')
 plt.show()
 
 
