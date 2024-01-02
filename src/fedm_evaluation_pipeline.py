@@ -1,28 +1,31 @@
-from data.generate_dataset import generate_dataset
-from visualization.visualize import plot_db_clusters
+from src.data.generate_dataset import generate_dataset
+from src.visualization.visualize import plot_db_clusters
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import DBSCAN
 import numpy as np
 from scipy.stats import spearmanr
 from sklearn.metrics import f1_score
 from matplotlib import pyplot as plt
-from data.divide_dataset import generate_participants_data
+from src.data.divide_dataset import generate_participants_data
+from src.data.generate_spikes import generate_spikes
 
 PARTICIPANTS = 2
 TOTAL_GLOBAL_SAMPLES = 750
+GLOBAL_CLUSTER_STD = 0.6
+GLOBAL_CLUSTER_FEATURES = 5
 DBSCAN_EPS = 0.3
 DBSCAN_MIN_SAMPLES = 10
 CENTERS = [[1, 1], [-1, -1]]
 SPIKES = [[1, 1]]
-DATASET_DIVISION_TYPE = 'non-iid clusters'  # 'iid' 'non-iid points' 'non-iid clusters'
+DATASET_DIVISION_TYPE = 'non-iid points'  # 'iid' 'non-iid points' 'non-iid clusters'
 
 
 def evaluation(labels_true, labels_predicted):
     return f1_score(labels_true, labels_predicted, average='micro')
 
 # generate toy dataset
-global_data, global_labels_true = generate_dataset(samples_nb=TOTAL_GLOBAL_SAMPLES, type='blobs', n_features=4,
-                                                   centers=CENTERS, cluster_std=0.3)
+global_data, global_labels_true = generate_dataset(cluster_std=GLOBAL_CLUSTER_STD, n_features=GLOBAL_CLUSTER_FEATURES,
+                                                   samples_nb=TOTAL_GLOBAL_SAMPLES, type='blobs', centers=CENTERS)
 global_data_dm = euclidean_distances(global_data)
 plt.scatter(global_data[:, 0], global_data[:, 1])
 plt.title('global data')
@@ -33,7 +36,8 @@ db = DBSCAN(metric='precomputed', eps=DBSCAN_EPS, min_samples=DBSCAN_MIN_SAMPLES
 plot_db_clusters(db, global_data)
 
 # clustering with Federated Learning
-participants_data = generate_participants_data(global_data, PARTICIPANTS, db.labels_, DATASET_DIVISION_TYPE, random_seed=42)
+participants_data, participants_labels = generate_participants_data(global_data, PARTICIPANTS, global_labels_true,
+                                                                    DATASET_DIVISION_TYPE, random_seed=42)
 
 # plotting only 1 and 2 dimension
 for d in participants_data:
@@ -43,8 +47,11 @@ plt.show()
 # plt.savefig('../reports/figures/data_division/' + DATASET_DIVISION_TYPE)
 
 #### Participant Based Computation ####
-# TODO: spikes generation
-spikes = SPIKES
+# spikes = SPIKES
+spikes = generate_spikes(participants_data)
+print(f'spikes:{spikes}')
+print(f'spikes.shape:{spikes.shape}')
+
 lsdm = [euclidean_distances(d, spikes) for d in participants_data]
 
 #### Coordinator Based Computation ####
@@ -61,6 +68,6 @@ print(f'Pearson FEDM vs ADM: {pearson_adm_fedm[0, 1]:.3f}')
 print(f'Spearman FEDM vs ADM: {spearman_adm_fedm.correlation:.3f}')
 
 # TODO: Hungarian algorithm – change of labels
-# TODO: right labels
-print(f'F1_score FEDM vs true: {evaluation(global_labels_true, fedm_clustering.labels_)}')
+print(f'F1_score FEDM vs true: {evaluation(fedm_clustering.labels_, participants_labels)}')
 print(f'F1_score DBSCAN vs true: {evaluation(global_labels_true, db.labels_)}')
+print(f'F1_score FEDM vs DBSCAN: {evaluation(fedm_clustering.labels_, db.labels_)}')
