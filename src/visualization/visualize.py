@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 
-def plot_db_clusters(db, X, savefig_name=None):
+def plot_db_clusters(db, X, savefig_name=None, title=None):
     labels = db.labels_
 
     # Number of clusters in labels, ignoring noise if present.
@@ -42,8 +42,10 @@ def plot_db_clusters(db, X, savefig_name=None):
             markeredgecolor="k",
             markersize=6,
         )
-
-    plt.title(f'clusters: {n_clusters_}, noise points: {n_noise_}')
+    if title:
+        plt.title(f'{title} \n clusters: {n_clusters_}, noise points: {n_noise_}')
+    else:
+        plt.title(f'clusters: {n_clusters_}, noise points: {n_noise_}')
     if savefig_name:
         plt.savefig(savefig_name)
     else:

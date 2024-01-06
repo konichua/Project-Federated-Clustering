@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 
-def generate_participants_data(global_dataset, participants_nb, labels, type, random_seed=42):
+def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42):
     samples_nb = global_dataset.shape[0]
 
     if participants_nb < 2:
