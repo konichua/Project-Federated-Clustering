@@ -30,9 +30,8 @@ def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42
     elif type == 'non-iid clusters':
         clusters = set(labels)
         divided_dataset = [global_dataset[labels == c] for c in clusters if c != -1]
-        new_labels = [labels[labels == c] for c in clusters]  # if c != -1]
+        new_labels = np.asarray([labels[labels == c] for c in clusters])  # if c != -1]
         # this line if we pass not global_true_labels, but db_labels
-        # noise data goes to the first participant
         # divided_dataset[0] = np.concatenate([divided_dataset[0], global_dataset[labels == -1]])
     else:
         raise ValueError('incorrect type')
