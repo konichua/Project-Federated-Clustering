@@ -4,12 +4,11 @@ import random
 
 def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42):
     samples_nb = global_dataset.shape[0]
-
-    if participants_nb < 2:
-        raise ValueError('incorrect number of participants')
+    samples_by_part = samples_nb // participants_nb
+    # if participants_nb < 2:
+    #     raise ValueError('incorrect number of participants')
     # uniformly distributed samples
     if type == 'iid':
-        samples_by_part = samples_nb // participants_nb
         divided_dataset = [global_dataset[(i - 1) * samples_by_part: i * samples_by_part]
                            for i in range(1, participants_nb)]
         divided_dataset.append(global_dataset[(participants_nb - 1) * samples_by_part:])
@@ -18,12 +17,15 @@ def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42
     elif type == 'non-iid points':
         random.seed(random_seed)
         start = 0
-        divided_dataset = list(np.zeros(participants_nb))
-        for i in range(participants_nb - 1):
-            end = random.randint(start, samples_nb)
-            divided_dataset[i] = global_dataset[start: end]
+        end = 0
+        divided_dataset = []
+        for i in range(1, participants_nb):
+            while end == start:
+                end = random.randint(start, samples_by_part * i)
+                # print('Achtung! Ewiges loop')
+            divided_dataset.append(global_dataset[start: end])
             start = end
-        divided_dataset[participants_nb - 1] = global_dataset[start:]
+        divided_dataset.append(global_dataset[start:])
         new_labels = labels
     # samples assigned to participant by label
     # participants_nb is useless in this option
@@ -35,4 +37,6 @@ def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42
         # divided_dataset[0] = np.concatenate([divided_dataset[0], global_dataset[labels == -1]])
     else:
         raise ValueError('incorrect type')
+    # print(f'{divided_dataset=}')
+    # return np.array(divided_dataset), new_labels.flatten()
     return np.asarray(divided_dataset, dtype=object), new_labels.flatten()

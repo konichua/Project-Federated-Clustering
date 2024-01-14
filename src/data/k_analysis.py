@@ -6,15 +6,15 @@ import matplotlib.cm as cm
 from yellowbrick.cluster import KElbowVisualizer
 
 
-MAX_CLUSTERS = 12
+MAX_CLUSTERS = 20
 
 
 def get_number_of_clusters(df):
     model = KMeans(n_init='auto', random_state=10)
-    # calinski_harabasz 6 distortion 12 silhouette 9
+    #  calinski_harabasz 6 distortion 12 silhouette 9
     visualizer = KElbowVisualizer(model, k=(1, MAX_CLUSTERS), metric='distortion', timings=False)
     visualizer.fit(df)  # Fit the data to the visualizer
-    visualizer.show()  # Finalize and render the figure
+    # visualizer.show()  # Finalize and render the figure
     # print(visualizer.elbow_value_)
     k = visualizer.elbow_value_ or 1
     score = visualizer.elbow_score_
