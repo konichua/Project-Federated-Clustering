@@ -5,7 +5,7 @@ import numpy as np
 def plot_db_clusters(db, X, savefig_name=None, title=None):
     labels = db.labels_
 
-    # Number of clusters in labels, ignoring noise if present.
+    # number of clusters in labels, ignoring noise if present
     n_clusters_ = len(set(db.labels_)) - (1 if -1 in db.labels_ else 0)
     n_noise_ = list(db.labels_).count(-1)
     unique_labels = set(labels)

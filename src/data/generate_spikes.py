@@ -1,15 +1,10 @@
-from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score
-import numpy as np
 from sklearn.decomposition import PCA
-from src.data.k_analysis import get_number_of_participants_clusters
+import numpy as np
 
 
 def generate_random_spikes(data, n_participants):
     variance = 0.7
-    # spikes_nb = 30
-    # print(f'{data.shape=}')
-    spikes_nb = max(data.shape[1] // (n_participants + 1), 1)
+    spikes_nb = max(data.shape[1] // n_participants, 1)
     pca = PCA(variance)
     dataset_pca = pca.fit_transform(data)
     generated_spikes = np.random.uniform(low=dataset_pca.min(axis=0),
@@ -18,16 +13,12 @@ def generate_random_spikes(data, n_participants):
     return pca.inverse_transform(generated_spikes)
 
 
-def generate_spikes(participants_data):
-    # n_clusters = get_number_of_participants_clusters(participants_data)
-    # print(f'determined clusters for every participant:{n_clusters}')
+def generate_spikes(participants_data, global_data_features):
     result = []
     for data in participants_data:
         result.append(generate_random_spikes(data, len(participants_data)))
-    # for n, data in zip(n_clusters, participants_data):
-        # if n == -1:
-        #     result.append(generate_random_spikes(data))
-        # else:
-        #     kmeans = KMeans(n_clusters=n, n_init='auto', random_state=10).fit(data)
-        #     result.append(kmeans.cluster_centers_)
-    return np.concatenate(result, axis=0)
+    spikes = np.concatenate(result, axis=0)
+    # reduce spikes for the sake of security
+    if spikes.shape[0] >= global_data_features:
+        spikes = spikes[:global_data_features - 1]
+    return spikes
