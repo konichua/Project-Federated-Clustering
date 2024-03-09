@@ -8,8 +8,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def fedm_kmeans_pipeline(global_data, dataset_division_type, participants, global_labels_true, gold_centers,
-                         random_state, algorithm_name):
+def fedm_pipeline(global_data, dataset_division_type, participants, global_labels_true, gold_centers,
+                  random_state, algorithm_name):
 
     # plt.scatter(global_data[:, 0], global_data[:, 1])
     # plt.title('Global data')
@@ -29,7 +29,7 @@ def fedm_kmeans_pipeline(global_data, dataset_division_type, participants, globa
 
     #### Participant Based Computation ####
     spikes = generate_spikes(participants_data, global_data.shape[1])
-    print(f'{spikes.shape=}')
+    # print(f'{spikes.shape=}')
     lsdm = [euclidean_distances(d, spikes) for d in participants_data]
 
     #### Coordinator Based Computation ####
