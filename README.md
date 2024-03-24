@@ -1,7 +1,7 @@
 Project Federated Clustering
 ==============================
 
-A short description of the project.
+In this work, secured Federated Clustering was implemented through Local Spike Distance Matrix(LSDM) and Federated Euclidean Distance Matrix (FEDM).
 
 ## Setup
 ~~~
