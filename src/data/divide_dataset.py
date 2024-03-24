@@ -3,6 +3,19 @@ import random
 
 
 def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42):
+    '''
+    Returns the generated blobs with labels
+            Parameters:
+                    global_dataset (int): the dataset
+                    participants_nb (int): the total number of participants
+                    labels (array): the corresponding labels of global_dataset
+                    type (str): the type of dataset partitioning
+                    random_seed (int): pass an int for reproducible output
+
+            Returns:
+                    (array of shape (n_participants, x, n_features)): the generated samples
+                    new_labels (array of shape (labels,)): the new labels
+    '''
     samples_nb = global_dataset.shape[0]
     samples_by_part = samples_nb // participants_nb
     # uniformly distributed samples
@@ -30,7 +43,8 @@ def divide_dataset(global_dataset, participants_nb, labels, type, random_seed=42
     elif type == 'non-iid clusters':
         clusters = set(labels)
         divided_dataset = [global_dataset[labels == c] for c in clusters]
-        new_labels = np.asarray([labels[labels == c] for c in clusters])
+        # new_labels = np.asarray([labels[labels == c] for c in clusters]).flatten()
+        new_labels = np.sort(labels)
     else:
         raise ValueError('incorrect type')
-    return np.asarray(divided_dataset, dtype=object), new_labels.flatten()
+    return np.asarray(divided_dataset, dtype=object), new_labels

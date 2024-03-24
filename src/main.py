@@ -7,12 +7,12 @@ import warnings
 warnings.filterwarnings('ignore')
 
 ###### participants features
-PARTICIPANTS = 14  # 14
-DATASET_DIVISION_TYPE = 'iid' #['iid', 'non-iid points', 'non-iid clusters'] [gr0, gr1, gr2]
+PARTICIPANTS = 14
+DATASET_DIVISION_TYPE = 'iid'  # ['iid', 'non-iid points', 'non-iid clusters']
 
 # ['kmeans', 'meanshift', 'affinitypropagation', 'birch', 'spectralclustering', 'gaussianmixture', 'dbscan', 'optics']
 # 'kmeans', 'meanshift', 'affinitypropagation', 'birch', 'gaussianmixture'
-ALGORITHM_NAME = 'affinitypropagation'
+ALGORITHM_NAME = 'kmeans'
 
 ###### dataset features
 ###### gold - where kmeans on global data performs at least with rand_score=0.7
@@ -23,51 +23,66 @@ GOLD_GLOBAL_SAMPLES = 573
 
 
 
-# # # =========================================== STD ==================================================================
-# lsdm_avg = []
-# lsdm_std = []
-# algo_avg = []
-# algo_std = []
-# for n_std in tqdm(range(0, 15)):
-#     arr_lsdm_vs_true = []
-#     arr_algo_vs_true = []
-#     for n_rand in tqdm(range(20), leave=False):
-#         global_data, global_labels_true = generate_dataset(cluster_std=n_std,
-#                                                            n_features=GOLD_CLUSTER_FEATURES,
-#                                                            samples_nb=GOLD_GLOBAL_SAMPLES,
-#                                                            centers=GOLD_CENTERS,
-#                                                            random_state=n_rand)
-#         lsdm_vs_true, algo_vs_true = fedm_pipeline(global_data=global_data,
-#                                                    dataset_division_type=DATASET_DIVISION_TYPE,
-#                                                    participants=PARTICIPANTS,
-#                                                    global_labels_true=global_labels_true,
-#                                                    gold_centers=GOLD_CENTERS,
-#                                                    random_state=n_rand,
-#                                                    algorithm_name=ALGORITHM_NAME)
-#         arr_lsdm_vs_true.append(lsdm_vs_true)
-#         arr_algo_vs_true.append(algo_vs_true)
-#     lsdm_avg.append(np.mean(arr_lsdm_vs_true))
-#     lsdm_std.append(np.std(arr_lsdm_vs_true))
-#     algo_avg.append(np.mean(arr_algo_vs_true))
-#     algo_std.append(np.std(arr_algo_vs_true))
-#
-# plt.figure(figsize=(10, 6))
-# plt.plot(range(0, 15), lsdm_avg, label='Federated ' + ALGORITHM_NAME, color='blue')
-# plt.plot(range(0, 15), algo_avg, label='Global ' + ALGORITHM_NAME, color='black')
-# plt.fill_between(range(0, 15), np.array(lsdm_avg) - np.array(lsdm_std),
-#                  np.array(lsdm_avg) + np.array(lsdm_std), color='grey', alpha=0.2)
-# plt.fill_between(range(0, 15), np.array(algo_avg) - np.array(algo_std),
-#              np.array(algo_avg) + np.array(algo_std), color='grey', alpha=0.2)
-# plt.title('Federated Clustering vs Global clustering on ' + ALGORITHM_NAME)
-# plt.xlabel('STD')
-# plt.ylabel('Adjusted Rand Score')
-# plt.legend()
-# plt.show()
-# # # =========================================== STD ==================================================================
+'''
+    how to use
+        call function plot_algos() - ALGORITHM_NAME is a subject to change if needed
+        or
+        call function participants_datadivision_comparison()
+        or 
+        uncomment a simple example below
+'''
+
+
+def plot_algos():
+    '''
+    Plots FC-Algorithm performance on STD-ARI scale
+    '''
+    lsdm_avg = []
+    lsdm_std = []
+    algo_avg = []
+    algo_std = []
+    for n_std in tqdm(range(0, 15)):
+        arr_lsdm_vs_true = []
+        arr_algo_vs_true = []
+        for n_rand in tqdm(range(20), leave=False):
+            global_data, global_labels_true = generate_dataset(cluster_std=n_std,
+                                                               n_features=GOLD_CLUSTER_FEATURES,
+                                                               samples_nb=GOLD_GLOBAL_SAMPLES,
+                                                               centers=GOLD_CENTERS,
+                                                               random_state=n_rand)
+            lsdm_vs_true, algo_vs_true = fedm_pipeline(global_data=global_data,
+                                                       dataset_division_type=DATASET_DIVISION_TYPE,
+                                                       participants=PARTICIPANTS,
+                                                       global_labels_true=global_labels_true,
+                                                       gold_centers=GOLD_CENTERS,
+                                                       random_state=n_rand,
+                                                       algorithm_name=ALGORITHM_NAME)
+            arr_lsdm_vs_true.append(lsdm_vs_true)
+            arr_algo_vs_true.append(algo_vs_true)
+        lsdm_avg.append(np.mean(arr_lsdm_vs_true))
+        lsdm_std.append(np.std(arr_lsdm_vs_true))
+        algo_avg.append(np.mean(arr_algo_vs_true))
+        algo_std.append(np.std(arr_algo_vs_true))
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(0, 15), lsdm_avg, label='Federated ' + ALGORITHM_NAME, color='blue')
+    plt.plot(range(0, 15), algo_avg, label='Global ' + ALGORITHM_NAME, color='black')
+    plt.fill_between(range(0, 15), np.array(lsdm_avg) - np.array(lsdm_std),
+                     np.array(lsdm_avg) + np.array(lsdm_std), color='grey', alpha=0.2)
+    plt.fill_between(range(0, 15), np.array(algo_avg) - np.array(algo_std),
+                 np.array(algo_avg) + np.array(algo_std), color='grey', alpha=0.2)
+    plt.title('Federated Clustering vs Global clustering on ' + ALGORITHM_NAME)
+    plt.xlabel('STD')
+    plt.ylabel('Adjusted Rand Score')
+    plt.legend()
+    plt.show()
 
 
 
 def participants_datadivision_comparison(name):
+    '''
+    Plots graph of N participant vs ARI
+    '''
     if name == 'constant_samples':
         title = 'N participants share 573 samples'
         samples_nb = GOLD_GLOBAL_SAMPLES
@@ -126,18 +141,21 @@ def participants_datadivision_comparison(name):
 
 
 # participants_datadivision_comparison('growing_samples')  # 'constant_samples' 'growing_samples'
+# plot_algos()
 
 
-
-# global_data, global_labels_true = generate_dataset(cluster_std=6,
-#                                                            n_features=2,
+# # a simple example
+# global_data, global_labels_true = generate_dataset(cluster_std=2,
+#                                                            n_features=GOLD_CLUSTER_FEATURES,
 #                                                            samples_nb=GOLD_GLOBAL_SAMPLES,
 #                                                            centers=GOLD_CENTERS,
 #                                                            random_state=15)
-# fedm_vs_true, kmeans_vs_true = fedm_kmeans_pipeline(global_data=global_data,
+# fedm_vs_true, kmeans_vs_true = fedm_pipeline(global_data=global_data,
 #                                                                 dataset_division_type=DATASET_DIVISION_TYPE,
-#                                                                 participants=100,
+#                                                                 participants=PARTICIPANTS,
 #                                                                 global_labels_true=global_labels_true,
 #                                                                 gold_centers=GOLD_CENTERS,
 #                                                                 random_state=15,
-#                                                                 algorithm_name='kmeans')
+#                                                                 algorithm_name='meanshift')
+# print(f'{fedm_vs_true=}')
+# print(f'{kmeans_vs_true=}')

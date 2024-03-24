@@ -4,6 +4,16 @@ from sklearn.mixture import GaussianMixture
 
 
 def clustering(algorithm, global_clusters_nb, random_state):
+    '''
+    Returns the model
+            Parameters:
+                    algorithm (str): the name of the algorithm
+                    global_clusters_nb (int): the total number of clusters
+                    random_state (int): pass an int for reproducible output
+
+            Returns:
+                    model: created model
+    '''
     if algorithm == 'kmeans':                    # 00:03:00
         model = KMeans(n_clusters=global_clusters_nb, n_init=5, init='k-means++', random_state=random_state)
     elif algorithm == 'meanshift':               # 01:30:00
