@@ -17,7 +17,7 @@ def clustering(algorithm, global_clusters_nb, random_state):
     if algorithm == 'kmeans':                    # 00:03:00
         model = KMeans(n_clusters=global_clusters_nb, n_init=5, init='k-means++', random_state=random_state)
     elif algorithm == 'meanshift':               # 01:30:00
-        model = MeanShift()
+        model = MeanShift(n_jobs=3)
     elif algorithm == 'affinitypropagation':     # 00:33:00
         model = AffinityPropagation(affinity='euclidean', random_state=random_state)
     elif algorithm == 'spectralclustering':

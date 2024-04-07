@@ -1,4 +1,4 @@
-from src.fedm_pipeline import fedm_pipeline
+from src.pipeline import pipeline
 from src.data.generate_dataset import generate_dataset
 from matplotlib import pyplot as plt
 from tqdm import tqdm
@@ -10,7 +10,6 @@ warnings.filterwarnings('ignore')
 PARTICIPANTS = 14
 DATASET_DIVISION_TYPE = 'iid'  # ['iid', 'non-iid points', 'non-iid clusters']
 
-# ['kmeans', 'meanshift', 'affinitypropagation', 'birch', 'spectralclustering', 'gaussianmixture', 'dbscan', 'optics']
 # 'kmeans', 'meanshift', 'affinitypropagation', 'birch', 'gaussianmixture'
 ALGORITHM_NAME = 'kmeans'
 
@@ -37,12 +36,19 @@ def plot_algos():
     '''
     Plots FC-Algorithm performance on STD-ARI scale
     '''
+    # ari_lsdm, ari_fedm, ari_pedm, ari_algo
     lsdm_avg = []
     lsdm_std = []
+    fedm_avg = []
+    fedm_std = []
+    pedm_avg = []
+    pedm_std = []
     algo_avg = []
     algo_std = []
     for n_std in tqdm(range(0, 15)):
         arr_lsdm_vs_true = []
+        arr_fedm_vs_true = []
+        arr_pedm_vs_true = []
         arr_algo_vs_true = []
         for n_rand in tqdm(range(20), leave=False):
             global_data, global_labels_true = generate_dataset(cluster_std=n_std,
@@ -50,31 +56,47 @@ def plot_algos():
                                                                samples_nb=GOLD_GLOBAL_SAMPLES,
                                                                centers=GOLD_CENTERS,
                                                                random_state=n_rand)
-            lsdm_vs_true, algo_vs_true = fedm_pipeline(global_data=global_data,
-                                                       dataset_division_type=DATASET_DIVISION_TYPE,
-                                                       participants=PARTICIPANTS,
-                                                       global_labels_true=global_labels_true,
-                                                       gold_centers=GOLD_CENTERS,
-                                                       random_state=n_rand,
-                                                       algorithm_name=ALGORITHM_NAME)
+            lsdm_vs_true, fedm_vs_true, pedm_vs_true, algo_vs_true = pipeline(global_data=global_data,
+                                                                              dataset_division_type=DATASET_DIVISION_TYPE,
+                                                                              participants=PARTICIPANTS,
+                                                                              global_labels_true=global_labels_true,
+                                                                              gold_centers=GOLD_CENTERS,
+                                                                              random_state=n_rand,
+                                                                              algorithm_name=ALGORITHM_NAME)
             arr_lsdm_vs_true.append(lsdm_vs_true)
+            arr_fedm_vs_true.append(fedm_vs_true)
+            arr_pedm_vs_true.append(pedm_vs_true)
             arr_algo_vs_true.append(algo_vs_true)
         lsdm_avg.append(np.mean(arr_lsdm_vs_true))
         lsdm_std.append(np.std(arr_lsdm_vs_true))
+
+        fedm_avg.append(np.mean(arr_fedm_vs_true))
+        fedm_std.append(np.std(arr_fedm_vs_true))
+
+        pedm_avg.append(np.mean(arr_pedm_vs_true))
+        pedm_std.append(np.std(arr_pedm_vs_true))
+
         algo_avg.append(np.mean(arr_algo_vs_true))
         algo_std.append(np.std(arr_algo_vs_true))
 
     plt.figure(figsize=(10, 6))
-    plt.plot(range(0, 15), lsdm_avg, label='Federated ' + ALGORITHM_NAME, color='blue')
-    plt.plot(range(0, 15), algo_avg, label='Global ' + ALGORITHM_NAME, color='black')
+    plt.plot(range(0, 15), lsdm_avg, label='CLSDM', color='royalblue', linewidth=4)
+    plt.plot(range(0, 15), fedm_avg, label='FEDM', color='darkviolet', linewidth=4)
+    plt.plot(range(0, 15), pedm_avg, label='PEDM', color='seagreen', linewidth=4)
+    plt.plot(range(0, 15), algo_avg, label='Global clustering', color='black', linewidth=4)
     plt.fill_between(range(0, 15), np.array(lsdm_avg) - np.array(lsdm_std),
                      np.array(lsdm_avg) + np.array(lsdm_std), color='grey', alpha=0.2)
+    plt.fill_between(range(0, 15), np.array(fedm_avg) - np.array(fedm_std),
+                 np.array(fedm_avg) + np.array(fedm_std), color='grey', alpha=0.2)
+    plt.fill_between(range(0, 15), np.array(pedm_avg) - np.array(pedm_std),
+                     np.array(pedm_avg) + np.array(pedm_std), color='grey', alpha=0.2)
     plt.fill_between(range(0, 15), np.array(algo_avg) - np.array(algo_std),
                  np.array(algo_avg) + np.array(algo_std), color='grey', alpha=0.2)
-    plt.title('Federated Clustering vs Global clustering on ' + ALGORITHM_NAME)
+    plt.title('Clustering with ' + ALGORITHM_NAME)
     plt.xlabel('STD')
     plt.ylabel('Adjusted Rand Score')
     plt.legend()
+    plt.grid()
     plt.show()
 
 
@@ -111,13 +133,13 @@ def participants_datadivision_comparison(name):
                                                                centers=GOLD_CENTERS,
                                                                random_state=n_rand)
             for division_type in ['iid', 'non-iid points']:
-                fedm_vs_true, _ = fedm_pipeline(global_data=global_data,
-                                                dataset_division_type=division_type,
-                                                participants=n_participants,
-                                                global_labels_true=global_labels_true,
-                                                gold_centers=GOLD_CENTERS,
-                                                random_state=n_rand,
-                                                algorithm_name='kmeans')
+                _, fedm_vs_true, _, _ = pipeline(global_data=global_data,
+                                           dataset_division_type=division_type,
+                                           participants=n_participants,
+                                           global_labels_true=global_labels_true,
+                                           gold_centers=GOLD_CENTERS,
+                                           random_state=n_rand,
+                                           algorithm_name='kmeans')
                 arr_fedm_vs_true[division_type].append(fedm_vs_true)
         for key, values in arr_fedm_vs_true.items():
             graph0_fedm_avg[key].append(np.mean(values))
@@ -137,11 +159,8 @@ def participants_datadivision_comparison(name):
     plt.xlabel('N participants')
     plt.ylabel('Adjusted Rand Score')
     plt.legend()
+    plt.grid()
     plt.show()
-
-
-# participants_datadivision_comparison('growing_samples')  # 'constant_samples' 'growing_samples'
-# plot_algos()
 
 
 # # a simple example
@@ -150,12 +169,18 @@ def participants_datadivision_comparison(name):
 #                                                            samples_nb=GOLD_GLOBAL_SAMPLES,
 #                                                            centers=GOLD_CENTERS,
 #                                                            random_state=15)
-# fedm_vs_true, kmeans_vs_true = fedm_pipeline(global_data=global_data,
-#                                                                 dataset_division_type=DATASET_DIVISION_TYPE,
-#                                                                 participants=PARTICIPANTS,
-#                                                                 global_labels_true=global_labels_true,
-#                                                                 gold_centers=GOLD_CENTERS,
-#                                                                 random_state=15,
-#                                                                 algorithm_name='meanshift')
-# print(f'{fedm_vs_true=}')
-# print(f'{kmeans_vs_true=}')
+# ari_lsdm, ari_fedm, ari_pedm, ari_algo = pipeline(global_data=global_data,
+#                                     dataset_division_type=DATASET_DIVISION_TYPE,
+#                                     participants=PARTICIPANTS,
+#                                     global_labels_true=global_labels_true,
+#                                     gold_centers=GOLD_CENTERS,
+#                                     random_state=15,
+#                                     algorithm_name='kmeans')
+# print(f'{ari_lsdm=}')
+# print(f'{ari_fedm=}')
+# print(f'{ari_pedm=}')
+# print(f'{ari_algo=}')
+
+
+# participants_datadivision_comparison('growing_samples')  # 'constant_samples' 'growing_samples'
+# plot_algos()
