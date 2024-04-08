@@ -6,3 +6,4 @@ matplotlib==3.7.3
 jupyter
 yellowbrick
 tqdm
+seaborn

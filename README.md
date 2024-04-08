@@ -1,13 +1,16 @@
 Project Federated Clustering
 ==============================
 
-In this work, secured Federated Clustering was implemented through Local Spike Distance Matrix(LSDM) and Federated Euclidean Distance Matrix (FEDM).
+In this work, secured Federated Clustering was implemented through Local Spike Distance Matrix(LSDM), Federated Euclidean Distance Matrix (FEDM) and Predicted Euclidean Distance Matrix (PEDM).
 
 ## Setup
 ~~~
-python -m venv .venv
-source .venv/bin/activate
+python -m venv venv
+source venv/Scripts/activate
 pip install -r requirements.txt
+
+do adjustments in src.main, then run
+python -m src.main
 ~~~
 
 Project Organization
